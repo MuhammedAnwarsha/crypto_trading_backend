@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 public class WalletController {
 
@@ -63,7 +65,7 @@ public class WalletController {
 
     @PutMapping("/api/wallet/deposit")
     public ResponseEntity<Wallet> addMoneyToWallet(@RequestHeader("Authorization")String jwt,
-                                                  @RequestParam(name = "order_id")Long orderId,
+                                                   @RequestParam(name = "order_id")Long orderId,
                                                    @RequestParam(name = "payment_id")String paymentId) throws Exception {
 
         User user = userService.findUserProfileByJwt(jwt);
@@ -73,6 +75,10 @@ public class WalletController {
         PaymentOrder order = paymentService.getPaymentOrderById(orderId);
 
         Boolean status = paymentService.proceedPaymentOrder(order,paymentId);
+
+        if (wallet.getBalance()==null){
+            wallet.setBalance(BigDecimal.valueOf(0));
+        }
 
         if (status){
             wallet = walletService.addBalance(wallet,order.getAmount());
